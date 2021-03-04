@@ -6,10 +6,13 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
+import com.senai.sp.jandira.roomtest2.adapter.ContatoAdapter
 import com.senai.sp.jandira.roomtest2.dao.AppDataBase
+import com.senai.sp.jandira.roomtest2.dao.Database
 import com.senai.sp.jandira.roomtest2.model.Contato
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
@@ -20,7 +23,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var buttonSalvar: Button
     private lateinit var buttonCancelar: Button
     private lateinit var dialog: AlertDialog
-    private lateinit var textLista: TextView
+    private lateinit var recyclerContato: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,9 +32,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         buttonNovoContato = findViewById(R.id.button_novo_contato)
         buttonNovoContato.setOnClickListener(this)
 
-        textLista = findViewById(R.id.text_lista)
-        textLista.setOnClickListener(this)
+        recyclerContato = findViewById(R.id.recycler_contatos)
 
+        exibirContatos()
     }
 
     override fun onClick(v: View) {
@@ -56,15 +59,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             "dbContato"
         ).allowMainThreadQueries().build()
 
-        val contatoDao = db.ContatoDao()
+        val contatoDao = db.contatoDao()
+
+        val adapter = ContatoAdapter()
 
         val contatos = contatoDao.listartTodos()
 
-        textLista.text = ""
+        recyclerContato.layoutManager = LinearLayoutManager(this)
 
-        for (contato in contatos) {
-           textLista.text = "${textLista.text} - ${contato.nomeContato}"
-        }
+        adapter.carregarLista(contatos)
+
+        recyclerContato.adapter = adapter
     }
 
     private fun salvarContato() {
@@ -73,14 +78,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             telefoneContato = editTelefone.text.toString()
         )
 
-        val db = Room.databaseBuilder(
-            this,
-            AppDataBase::class.java,
-            "dbContato"
-        ).allowMainThreadQueries().build()
 
-        val contatoDao = db.ContatoDao()
+        val contatoDao = Database.getDatabase(this).contatoDao()
         contatoDao.salvar(contato)
+
+        exibirContatos()
+        dialog.dismiss()
     }
 
     private fun abrirCadastroContato() {
@@ -103,9 +106,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         dialog = alertDialog.create()
         dialog.setCancelable(false)
         dialog.show()
-
-
-
 
     }
 }

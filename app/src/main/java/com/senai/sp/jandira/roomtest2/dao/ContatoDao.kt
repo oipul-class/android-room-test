@@ -6,7 +6,7 @@ import com.senai.sp.jandira.roomtest2.model.Contato
 @Dao
 interface ContatoDao {
 
-    @Query("SELECT * FROM contato ORDER BY nome Desc")
+    @Query("SELECT * FROM contato ORDER BY id Desc")
     fun listartTodos() : List<Contato>
 
     @Query("SELECT * FROM contato WHERE id = :id ")
